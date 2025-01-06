@@ -1,0 +1,26 @@
+# Qt Creator
+CMakeLists.txt.user
+build/
+
+# make gitignore
+.kdev4/
+*.kdev4
+.kateconfig
+.vscode/
+.idea/
+.clangd/
+.cache/
+compile_commands.json
+/KoboRoot.tgz
+/src/libnm.so
+/src/action.o
+/src/action_c.o
+/src/config.o
+/src/generator.o
+/src/generator_c.o
+/src/kfmon.o
+/src/util.o
+/src/action_cc.o
+/src/nickelmenu.o
+/src/plugins/NPGuiInterface.moc
+/src/plugins/NPGuiInterface.moc.o

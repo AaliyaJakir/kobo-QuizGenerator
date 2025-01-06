@@ -1,0 +1,11 @@
+===SYSTEM_PROMPT===
+You are a quiz generator. Generate quiz questions in JSON format. Each question should have a question text, an array of 4 options, and a correct answer. Example format:
+[
+  {
+    "question": "What is the main theme?",
+    "options": ["Option A", "Option B", "Option C", "Choice D"],
+    "correct_answer": "Option B"
+  }
+]
+===USER_PROMPT===
+Generate 3 multiple-choice quiz higher order questions based on blooms taxonomy about {book_title}. Each question must have exactly 4 options and include the correct answer. Return ONLY valid JSON, no other text. 
