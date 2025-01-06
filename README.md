@@ -33,10 +33,16 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
 4. **Update Kobo**
    Place `KoboRoot.tgz` in your Kobo's `.kobo` folder to update your device.
 
+### Updating your books
+***You need `calibre_kobo_server.py` which you can get at kobo-fetchsyllabus which has an endpoint to update books.json with your books (unfortunately, koreader.sqlite doesn't easily offer this information)
+
+Run `updateBooks.sh` -- you can do this using Nickelmenu with this configuration:
+`menu_item:main:Update Logseq:cmd_spawn:/bin/sh /mnt/onboard/.adds/syllabusFetch/updateBooks.sh`
+
 ---
 
 ## Development
 
 To make changes and rebuild the plugin:
 ```bash
-docker run -u $(id -u):$(id -g) --volume="$PWD:$PWD" --entrypoint=make --workdir="$PWD" --env=HOME --rm -it ghcr.io/pgaskin/nickeltc:1 NAME=QuizGenerator
+docker run -u $(id -u):$(id -g) --volume="$PWD:$PWD" --entrypoint=make --workdir="$PWD" --env=HOME --rm -it ghcr.io/pgaskin/nickeltc:1 NAME=SyllabusFetch
