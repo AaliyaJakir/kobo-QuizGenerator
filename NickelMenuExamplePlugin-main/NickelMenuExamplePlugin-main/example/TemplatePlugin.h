@@ -53,6 +53,8 @@ class TemplatePlugin : public QObject, public NPGuiInterface
         void generateQuizForBook(const QString &bookTitle);
         void loadQuizQuestions();
         void showQuizUi();
+        void handleBookScrollUp();
+        void handleBookScrollDown();
 
         // New functions for review
         void onReviewClicked();
@@ -73,6 +75,8 @@ class TemplatePlugin : public QObject, public NPGuiInterface
 
         QHBoxLayout* m_buttonLayout = nullptr; // To hold the buttons at the end
         QListWidget* m_bookListWidget = nullptr;
+        QPushButton* m_bookScrollUpButton = nullptr;
+        QPushButton* m_bookScrollDownButton = nullptr;
 
         // Error dialog widgets
         QWidget* m_errorWidget = nullptr;

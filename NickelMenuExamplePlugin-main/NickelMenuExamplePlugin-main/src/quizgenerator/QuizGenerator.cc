@@ -408,6 +408,36 @@ void QuizGenerator::onReviewNextClicked()
     }
 }
 
+void QuizGenerator::handleBookScrollUp()
+{
+    if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
+    
+    int currentRow = m_bookListWidget->currentRow();
+    if (currentRow == -1) {
+        currentRow = m_bookListWidget->count() - 1;  // Start from bottom if no selection
+    }
+    
+    // Move up 5 items or to top
+    int newRow = qMax(0, currentRow - 5);
+    m_bookListWidget->setCurrentRow(newRow);
+    m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
+}
+
+void QuizGenerator::handleBookScrollDown()
+{
+    if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
+    
+    int currentRow = m_bookListWidget->currentRow();
+    if (currentRow == -1) {
+        currentRow = 0;  // Start from top if no selection
+    }
+    
+    // Move down 5 items or to bottom
+    int newRow = qMin(m_bookListWidget->count() - 1, currentRow + 5);
+    m_bookListWidget->setCurrentRow(newRow);
+    m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
+}
+
 void QuizGenerator::showBookSelection()
 {
     clearCurrentLayout();
@@ -470,6 +500,47 @@ void QuizGenerator::showBookSelection()
         "}"
     );
     buttonLayout->addWidget(selectButton);
+
+    // Create scroll buttons
+    m_bookScrollUpButton = new QPushButton("▲", &m_dlg);
+    m_bookScrollUpButton->setStyleSheet(
+        "QPushButton {"
+        "    font-size: 28px;"
+        "    padding: 15px;"
+        "    background-color: #000000;"
+        "    border: none;"
+        "    border-radius: 10px;"
+        "    color: #ffffff;"
+        "    min-width: 60px;"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #333333;"
+        "}"
+    );
+    m_bookScrollUpButton->setAttribute(Qt::WA_AcceptTouchEvents);
+    m_bookScrollUpButton->installEventFilter(this);
+    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &QuizGenerator::handleBookScrollUp);
+    buttonLayout->addWidget(m_bookScrollUpButton);
+
+    m_bookScrollDownButton = new QPushButton("▼", &m_dlg);
+    m_bookScrollDownButton->setStyleSheet(
+        "QPushButton {"
+        "    font-size: 28px;"
+        "    padding: 15px;"
+        "    background-color: #000000;"
+        "    border: none;"
+        "    border-radius: 10px;"
+        "    color: #ffffff;"
+        "    min-width: 60px;"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #333333;"
+        "}"
+    );
+    m_bookScrollDownButton->setAttribute(Qt::WA_AcceptTouchEvents);
+    m_bookScrollDownButton->installEventFilter(this);
+    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &QuizGenerator::handleBookScrollDown);
+    buttonLayout->addWidget(m_bookScrollDownButton);
 
     // Create exit button
     QPushButton *exitButton = new QPushButton("Exit", &m_dlg);
