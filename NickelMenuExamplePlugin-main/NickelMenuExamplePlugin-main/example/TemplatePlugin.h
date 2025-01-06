@@ -18,6 +18,7 @@
 const QString QUIZ_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/generateQuiz.sh";
 const QString QUIZ_QUESTIONS_PATH = "/mnt/onboard/.adds/quiz/quiz_questions.json";
 const QString BOOKS_LIST_PATH = "/mnt/onboard/.adds/quiz/books.json";
+const QString UPDATE_BOOKS_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/updateBooks.sh";
 
 struct QuizItem {
     QString question;
@@ -83,9 +84,14 @@ class TemplatePlugin : public QObject, public NPGuiInterface
         QLabel* m_errorLabel = nullptr;
         QPushButton* m_errorButton = nullptr;
 
+        // Status label for feedback
+        QLabel* m_statusLabel = nullptr;
+
         // Helper methods
         void clearCurrentLayout();
         QWidget* createOptionWidget(int index, const QString &text);
+        void showStatusMessage(const QString& message, bool isError = false);
+        void runImportScript();
 };
 
 #endif // TEMPLATE_PLUGIN_H

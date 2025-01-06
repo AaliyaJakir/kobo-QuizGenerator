@@ -16,6 +16,7 @@
 #include <QListWidget>
 #include <QProcess>
 #include <QSizePolicy>
+#include <QTimer>
 
 #include "TemplatePlugin.h"
 
@@ -443,6 +444,10 @@ void TemplatePlugin::showBookSelection()
     clearCurrentLayout();
     QVBoxLayout *layout = new QVBoxLayout(&m_dlg);
 
+    // Create top bar with title and import button
+    QHBoxLayout* topBar = new QHBoxLayout();
+
+    // Title label
     QLabel *label = new QLabel("Select a book to generate quiz:", &m_dlg);
     label->setStyleSheet(
         "QLabel {"
@@ -451,7 +456,43 @@ void TemplatePlugin::showBookSelection()
         "    padding: 5px;"
         "}"
     );
-    layout->addWidget(label);
+    topBar->addWidget(label);
+
+    // Add import button
+    QPushButton* importButton = new QPushButton("Import", &m_dlg);
+    importButton->setStyleSheet(
+        "QPushButton {"
+        "    font-size: 28px;"
+        "    padding: 10px 20px;"
+        "    background-color: #000000;"
+        "    border: none;"
+        "    border-radius: 10px;"
+        "    color: #ffffff;"
+        "    min-width: 100px;"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #333333;"
+        "}"
+    );
+    importButton->setAttribute(Qt::WA_AcceptTouchEvents);
+    importButton->installEventFilter(this);
+    connect(importButton, &QPushButton::clicked, this, &TemplatePlugin::runImportScript);
+    topBar->addWidget(importButton);
+
+    layout->addLayout(topBar);
+
+    // Add status label
+    m_statusLabel = new QLabel(&m_dlg);
+    m_statusLabel->setStyleSheet(
+        "QLabel {"
+        "    font-size: 28px;"
+        "    padding: 10px;"
+        "    border-radius: 5px;"
+        "}"
+    );
+    m_statusLabel->setAlignment(Qt::AlignCenter);
+    m_statusLabel->hide();  // Hidden by default
+    layout->addWidget(m_statusLabel);
 
     m_bookListWidget = new QListWidget(&m_dlg);
     m_bookListWidget->setStyleSheet(
@@ -810,4 +851,66 @@ QWidget* TemplatePlugin::createOptionWidget(int index, const QString &text)
     optionLayout->addWidget(optionLabel);
 
     return optionWidget;
+}
+
+void TemplatePlugin::runImportScript()
+{
+    showStatusMessage("Updating book list...");
+    
+    QProcess *process = new QProcess(this);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            [this, process](int exitCode, QProcess::ExitStatus) {
+        if (exitCode == 0) {
+            // Reload the book list widget with new data
+            QFile file(BOOKS_LIST_PATH);
+            if (file.open(QIODevice::ReadOnly)) {
+                QByteArray data = file.readAll();
+                file.close();
+
+                QJsonDocument doc = QJsonDocument::fromJson(data);
+                if (doc.isObject()) {
+                    m_bookListWidget->clear();  // Clear existing items
+                    QJsonArray bookArray = doc.object()["books"].toArray();
+                    QStringList bookTitles;
+                    for (const QJsonValue &val : bookArray) {
+                        bookTitles.append(val.toString());
+                    }
+                    m_bookListWidget->addItems(bookTitles);
+                    showStatusMessage("Book list updated successfully!", false);
+                } else {
+                    showStatusMessage("Error: Invalid books list format", true);
+                }
+            } else {
+                showStatusMessage("Error: Could not read books list", true);
+            }
+        } else {
+            showStatusMessage("Update failed. Check your connection.", true);
+        }
+        process->deleteLater();
+    });
+    
+    process->start(UPDATE_BOOKS_SCRIPT_PATH);
+}
+
+void TemplatePlugin::showStatusMessage(const QString& message, bool isError)
+{
+    if (!m_statusLabel) {
+        return;
+    }
+
+    m_statusLabel->setText(message);
+    m_statusLabel->setStyleSheet(
+        QString("QLabel {"
+        "    font-size: 28px;"
+        "    padding: 10px;"
+        "    border-radius: 5px;"
+        "    background-color: %1;"
+        "    color: %2;"
+        "}").arg(isError ? "#ffebee" : "#e8f5e9",  // Light red or light green background
+                isError ? "#c62828" : "#2e7d32")    // Dark red or dark green text
+    );
+    m_statusLabel->show();
+
+    // Auto-hide after 3 seconds
+    QTimer::singleShot(3000, m_statusLabel, &QLabel::hide);
 }

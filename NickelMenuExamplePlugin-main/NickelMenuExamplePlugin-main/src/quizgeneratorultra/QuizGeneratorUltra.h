@@ -1,5 +1,5 @@
-#ifndef QUIZGENERATOR_PLUGIN_H
-#define QUIZGENERATOR_PLUGIN_H
+#ifndef QUIZGENERATORULTRA_PLUGIN_H
+#define QUIZGENERATORULTRA_PLUGIN_H
 
 #include <QObject>
 #include "NPDialog.h"
@@ -18,6 +18,7 @@
 const QString QUIZ_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/generateQuiz.sh";
 const QString QUIZ_QUESTIONS_PATH = "/mnt/onboard/.adds/quiz/quiz_questions.json";
 const QString BOOKS_LIST_PATH = "/mnt/onboard/.adds/quiz/books.json";
+const QString UPDATE_BOOKS_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/updateBooks.sh";
 
 struct QuizItem {
     QString question;
@@ -25,15 +26,15 @@ struct QuizItem {
     QString correctAnswer;
 };
 
-class QuizGenerator : public QObject, public NPGuiInterface
+class QuizGeneratorUltra : public QObject, public NPGuiInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID NPGuiInterfaceIID FILE "QuizGenerator.json")
+    Q_PLUGIN_METADATA(IID NPGuiInterfaceIID FILE "QuizGeneratorUltra.json")
     Q_INTERFACES(NPGuiInterface)
 
     public:
-        QuizGenerator();
-        ~QuizGenerator() {
+        QuizGeneratorUltra();
+        ~QuizGeneratorUltra() {
             clearCurrentLayout();
         }
         void showUi();
@@ -83,9 +84,14 @@ class QuizGenerator : public QObject, public NPGuiInterface
         QLabel* m_errorLabel = nullptr;
         QPushButton* m_errorButton = nullptr;
 
+        // Status label for feedback
+        QLabel* m_statusLabel = nullptr;
+
         // Helper methods
         void clearCurrentLayout();
         QWidget* createOptionWidget(int index, const QString &text);
+        void showStatusMessage(const QString& message, bool isError = false);
+        void runImportScript();
 };
 
-#endif // QUIZGENERATOR_PLUGIN_H
+#endif // QUIZGENERATORULTRA_PLUGIN_H

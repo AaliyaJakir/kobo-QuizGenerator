@@ -16,10 +16,11 @@
 #include <QListWidget>
 #include <QProcess>
 #include <QSizePolicy>
+#include <QTimer>
 
-#include "QuizGenerator.h"
+#include "QuizGeneratorUltra.h"
 
-void QuizGenerator::showError(const QString& message) 
+void QuizGeneratorUltra::showError(const QString& message) 
 {
     clearCurrentLayout();
     QVBoxLayout* layout = new QVBoxLayout(&m_dlg);
@@ -52,7 +53,7 @@ void QuizGenerator::showError(const QString& message)
     m_dlg.showDlg();
 }
 
-QuizGenerator::QuizGenerator() 
+QuizGeneratorUltra::QuizGeneratorUltra() 
     : m_currentIndex(0)
     , m_score(0)
     , m_uiInitialized(false)
@@ -91,7 +92,7 @@ QuizGenerator::QuizGenerator()
     }
 }
 
-void QuizGenerator::showUi()
+void QuizGeneratorUltra::showUi()
 {
     // Reset quiz state
     m_currentIndex = 0;
@@ -102,7 +103,7 @@ void QuizGenerator::showUi()
     showBookSelection();
 }
 
-void QuizGenerator::updateQuestion()
+void QuizGeneratorUltra::updateQuestion()
 {
     // Guard against out-of-range
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
@@ -151,7 +152,7 @@ void QuizGenerator::updateQuestion()
     }
 }
 
-void QuizGenerator::onSubmitClicked()
+void QuizGeneratorUltra::onSubmitClicked()
 {
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
         showFinalScore();
@@ -183,7 +184,7 @@ void QuizGenerator::onSubmitClicked()
     }
 }
 
-void QuizGenerator::showFinalScore()
+void QuizGeneratorUltra::showFinalScore()
 {
     // Hide all option widgets first
     QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(m_dlg.layout());
@@ -210,7 +211,7 @@ void QuizGenerator::showFinalScore()
     // "Review" button
     m_submitButton->setText("Review");
     m_submitButton->show();  // Make sure it's visible
-    connect(m_submitButton, &QPushButton::clicked, this, &QuizGenerator::onReviewClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onReviewClicked);
     m_buttonLayout->addWidget(m_submitButton);
 
     // "Close" button
@@ -239,7 +240,7 @@ void QuizGenerator::showFinalScore()
 }
 
 // Add this method to handle touch events for radio buttons
-bool QuizGenerator::eventFilter(QObject *obj, QEvent *event)
+bool QuizGeneratorUltra::eventFilter(QObject *obj, QEvent *event)
 {
     // Handle button touch events
     if (QPushButton *button = qobject_cast<QPushButton*>(obj)) {
@@ -297,14 +298,14 @@ bool QuizGenerator::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void QuizGenerator::onReviewClicked()
+void QuizGeneratorUltra::onReviewClicked()
 {
     m_currentIndex = 0;
 
     // Set button text
     m_submitButton->setText(m_quizData.size() > 1 ? "Next" : "Close");
     m_submitButton->disconnect();
-    connect(m_submitButton, &QPushButton::clicked, this, &QuizGenerator::onReviewNextClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onReviewNextClicked);
 
     // Make sure the close button is properly connected
     if (m_secondaryButton) {
@@ -329,7 +330,7 @@ void QuizGenerator::onReviewClicked()
     updateReviewQuestion();
 }
 
-void QuizGenerator::updateReviewQuestion()
+void QuizGeneratorUltra::updateReviewQuestion()
 {
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
         m_dlg.reject();  // Close dialog
@@ -388,7 +389,7 @@ void QuizGenerator::updateReviewQuestion()
     }
 }
 
-void QuizGenerator::onReviewNextClicked()
+void QuizGeneratorUltra::onReviewNextClicked()
 {
     m_currentIndex++;
     if (m_currentIndex < m_quizData.size()) {
@@ -408,7 +409,7 @@ void QuizGenerator::onReviewNextClicked()
     }
 }
 
-void QuizGenerator::handleBookScrollUp()
+void QuizGeneratorUltra::handleBookScrollUp()
 {
     if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
     
@@ -423,7 +424,7 @@ void QuizGenerator::handleBookScrollUp()
     m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
 }
 
-void QuizGenerator::handleBookScrollDown()
+void QuizGeneratorUltra::handleBookScrollDown()
 {
     if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
     
@@ -438,11 +439,15 @@ void QuizGenerator::handleBookScrollDown()
     m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
 }
 
-void QuizGenerator::showBookSelection()
+void QuizGeneratorUltra::showBookSelection()
 {
     clearCurrentLayout();
     QVBoxLayout *layout = new QVBoxLayout(&m_dlg);
 
+    // Create top bar with title and import button
+    QHBoxLayout* topBar = new QHBoxLayout();
+
+    // Title label
     QLabel *label = new QLabel("Select a book to generate quiz:", &m_dlg);
     label->setStyleSheet(
         "QLabel {"
@@ -451,7 +456,43 @@ void QuizGenerator::showBookSelection()
         "    padding: 5px;"
         "}"
     );
-    layout->addWidget(label);
+    topBar->addWidget(label);
+
+    // Add import button
+    QPushButton* importButton = new QPushButton("Import", &m_dlg);
+    importButton->setStyleSheet(
+        "QPushButton {"
+        "    font-size: 28px;"
+        "    padding: 10px 20px;"
+        "    background-color: #000000;"
+        "    border: none;"
+        "    border-radius: 10px;"
+        "    color: #ffffff;"
+        "    min-width: 100px;"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: #333333;"
+        "}"
+    );
+    importButton->setAttribute(Qt::WA_AcceptTouchEvents);
+    importButton->installEventFilter(this);
+    connect(importButton, &QPushButton::clicked, this, &QuizGeneratorUltra::runImportScript);
+    topBar->addWidget(importButton);
+
+    layout->addLayout(topBar);
+
+    // Add status label
+    m_statusLabel = new QLabel(&m_dlg);
+    m_statusLabel->setStyleSheet(
+        "QLabel {"
+        "    font-size: 28px;"
+        "    padding: 10px;"
+        "    border-radius: 5px;"
+        "}"
+    );
+    m_statusLabel->setAlignment(Qt::AlignCenter);
+    m_statusLabel->hide();  // Hidden by default
+    layout->addWidget(m_statusLabel);
 
     m_bookListWidget = new QListWidget(&m_dlg);
     m_bookListWidget->setStyleSheet(
@@ -519,7 +560,7 @@ void QuizGenerator::showBookSelection()
     );
     m_bookScrollUpButton->setAttribute(Qt::WA_AcceptTouchEvents);
     m_bookScrollUpButton->installEventFilter(this);
-    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &QuizGenerator::handleBookScrollUp);
+    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &QuizGeneratorUltra::handleBookScrollUp);
     buttonLayout->addWidget(m_bookScrollUpButton);
 
     m_bookScrollDownButton = new QPushButton("▼", &m_dlg);
@@ -539,7 +580,7 @@ void QuizGenerator::showBookSelection()
     );
     m_bookScrollDownButton->setAttribute(Qt::WA_AcceptTouchEvents);
     m_bookScrollDownButton->installEventFilter(this);
-    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &QuizGenerator::handleBookScrollDown);
+    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &QuizGeneratorUltra::handleBookScrollDown);
     buttonLayout->addWidget(m_bookScrollDownButton);
 
     // Create exit button
@@ -557,7 +598,7 @@ void QuizGenerator::showBookSelection()
     // Add button layout to main layout
     layout->addLayout(buttonLayout);
 
-    connect(selectButton, &QPushButton::clicked, this, &QuizGenerator::onBookSelected);
+    connect(selectButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onBookSelected);
     connect(exitButton, &QPushButton::clicked, &m_dlg, &QDialog::reject);
 
     // Set the layout
@@ -567,7 +608,7 @@ void QuizGenerator::showBookSelection()
     m_dlg.showDlg();
 }
 
-void QuizGenerator::onBookSelected()
+void QuizGeneratorUltra::onBookSelected()
 {
     QListWidgetItem *selectedItem = m_bookListWidget->currentItem();
     if (!selectedItem) {
@@ -608,7 +649,7 @@ void QuizGenerator::onBookSelected()
     generateQuizForBook(bookTitle);
 }
 
-void QuizGenerator::generateQuizForBook(const QString &bookTitle)
+void QuizGeneratorUltra::generateQuizForBook(const QString &bookTitle)
 {
     QString scriptPath = QUIZ_SCRIPT_PATH;
     QStringList arguments;
@@ -629,7 +670,7 @@ void QuizGenerator::generateQuizForBook(const QString &bookTitle)
     process->start(scriptPath, arguments);
 }
 
-void QuizGenerator::loadQuizQuestions()
+void QuizGeneratorUltra::loadQuizQuestions()
 {
     m_quizData.clear();
 
@@ -668,7 +709,7 @@ void QuizGenerator::loadQuizQuestions()
     }
 }
 
-void QuizGenerator::showQuizUi()
+void QuizGeneratorUltra::showQuizUi()
 {
     // Clear existing layout and widgets properly
     clearCurrentLayout();
@@ -715,7 +756,7 @@ void QuizGenerator::showQuizUi()
         "}"
     );
     layout->addWidget(m_submitButton, 0, Qt::AlignCenter);
-    connect(m_submitButton, &QPushButton::clicked, this, &QuizGenerator::onSubmitClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onSubmitClicked);
 
     // Set the new layout (don't delete old one, clearCurrentLayout already did that)
     m_dlg.setLayout(layout);
@@ -727,7 +768,7 @@ void QuizGenerator::showQuizUi()
     m_dlg.showDlg();
 }
 
-void QuizGenerator::clearCurrentLayout()
+void QuizGeneratorUltra::clearCurrentLayout()
 {
     // Disconnect all signals
     if (m_submitButton) {
@@ -771,7 +812,7 @@ void QuizGenerator::clearCurrentLayout()
 }
 
 // Create a custom widget for each option
-QWidget* QuizGenerator::createOptionWidget(int index, const QString &text)
+QWidget* QuizGeneratorUltra::createOptionWidget(int index, const QString &text)
 {
     // A container widget to hold radio button + label
     QWidget *optionWidget = new QWidget(&m_dlg);
@@ -810,4 +851,66 @@ QWidget* QuizGenerator::createOptionWidget(int index, const QString &text)
     optionLayout->addWidget(optionLabel);
 
     return optionWidget;
+}
+
+void QuizGeneratorUltra::runImportScript()
+{
+    showStatusMessage("Updating book list...");
+    
+    QProcess *process = new QProcess(this);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            [this, process](int exitCode, QProcess::ExitStatus) {
+        if (exitCode == 0) {
+            // Reload the book list widget with new data
+            QFile file(BOOKS_LIST_PATH);
+            if (file.open(QIODevice::ReadOnly)) {
+                QByteArray data = file.readAll();
+                file.close();
+
+                QJsonDocument doc = QJsonDocument::fromJson(data);
+                if (doc.isObject()) {
+                    m_bookListWidget->clear();  // Clear existing items
+                    QJsonArray bookArray = doc.object()["books"].toArray();
+                    QStringList bookTitles;
+                    for (const QJsonValue &val : bookArray) {
+                        bookTitles.append(val.toString());
+                    }
+                    m_bookListWidget->addItems(bookTitles);
+                    showStatusMessage("Book list updated successfully!", false);
+                } else {
+                    showStatusMessage("Error: Invalid books list format", true);
+                }
+            } else {
+                showStatusMessage("Error: Could not read books list", true);
+            }
+        } else {
+            showStatusMessage("Update failed. Check your connection.", true);
+        }
+        process->deleteLater();
+    });
+    
+    process->start(UPDATE_BOOKS_SCRIPT_PATH);
+}
+
+void QuizGeneratorUltra::showStatusMessage(const QString& message, bool isError)
+{
+    if (!m_statusLabel) {
+        return;
+    }
+
+    m_statusLabel->setText(message);
+    m_statusLabel->setStyleSheet(
+        QString("QLabel {"
+        "    font-size: 28px;"
+        "    padding: 10px;"
+        "    border-radius: 5px;"
+        "    background-color: %1;"
+        "    color: %2;"
+        "}").arg(isError ? "#ffebee" : "#e8f5e9",  // Light red or light green background
+                isError ? "#c62828" : "#2e7d32")    // Dark red or dark green text
+    );
+    m_statusLabel->show();
+
+    // Auto-hide after 3 seconds
+    QTimer::singleShot(3000, m_statusLabel, &QLabel::hide);
 }
