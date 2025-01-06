@@ -18,9 +18,9 @@
 #include <QSizePolicy>
 #include <QTimer>
 
-#include "TemplatePlugin.h"
+#include "QuizGeneratorMarathon.h"
 
-void TemplatePlugin::showError(const QString& message) 
+void QuizGeneratorMarathon::showError(const QString& message) 
 {
     clearCurrentLayout();
     QVBoxLayout* layout = new QVBoxLayout(&m_dlg);
@@ -53,7 +53,7 @@ void TemplatePlugin::showError(const QString& message)
     m_dlg.showDlg();
 }
 
-TemplatePlugin::TemplatePlugin() 
+QuizGeneratorMarathon::QuizGeneratorMarathon() 
     : m_currentIndex(0)
     , m_score(0)
     , m_uiInitialized(false)
@@ -93,7 +93,7 @@ TemplatePlugin::TemplatePlugin()
     }
 }
 
-void TemplatePlugin::showUi()
+void QuizGeneratorMarathon::showUi()
 {
     // Reset quiz state
     m_currentIndex = 0;
@@ -104,7 +104,7 @@ void TemplatePlugin::showUi()
     showBookSelection();
 }
 
-void TemplatePlugin::updateQuestion()
+void QuizGeneratorMarathon::updateQuestion()
 {
     // Guard against out-of-range
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
@@ -153,7 +153,7 @@ void TemplatePlugin::updateQuestion()
     }
 }
 
-void TemplatePlugin::onSubmitClicked()
+void QuizGeneratorMarathon::onSubmitClicked()
 {
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
         showFinalScore();
@@ -185,7 +185,7 @@ void TemplatePlugin::onSubmitClicked()
     }
 }
 
-void TemplatePlugin::showFinalScore()
+void QuizGeneratorMarathon::showFinalScore()
 {
     // Hide all option widgets first
     QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(m_dlg.layout());
@@ -212,7 +212,7 @@ void TemplatePlugin::showFinalScore()
     // "Review" button
     m_submitButton->setText("Review");
     m_submitButton->show();  // Make sure it's visible
-    connect(m_submitButton, &QPushButton::clicked, this, &TemplatePlugin::onReviewClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::onReviewClicked);
     m_buttonLayout->addWidget(m_submitButton);
 
     // "Close" button
@@ -241,7 +241,7 @@ void TemplatePlugin::showFinalScore()
 }
 
 // Add this method to handle touch events for radio buttons
-bool TemplatePlugin::eventFilter(QObject *obj, QEvent *event)
+bool QuizGeneratorMarathon::eventFilter(QObject *obj, QEvent *event)
 {
     // Handle button touch events
     if (QPushButton *button = qobject_cast<QPushButton*>(obj)) {
@@ -299,14 +299,14 @@ bool TemplatePlugin::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void TemplatePlugin::onReviewClicked()
+void QuizGeneratorMarathon::onReviewClicked()
 {
     m_currentIndex = 0;
 
     // Set button text
     m_submitButton->setText(m_quizData.size() > 1 ? "Next" : "Close");
     m_submitButton->disconnect();
-    connect(m_submitButton, &QPushButton::clicked, this, &TemplatePlugin::onReviewNextClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::onReviewNextClicked);
 
     // Make sure the close button is properly connected
     if (m_secondaryButton) {
@@ -331,7 +331,7 @@ void TemplatePlugin::onReviewClicked()
     updateReviewQuestion();
 }
 
-void TemplatePlugin::updateReviewQuestion()
+void QuizGeneratorMarathon::updateReviewQuestion()
 {
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
         m_dlg.reject();  // Close dialog
@@ -415,7 +415,7 @@ void TemplatePlugin::updateReviewQuestion()
     m_explanationLabel->show();
 }
 
-void TemplatePlugin::onReviewNextClicked()
+void QuizGeneratorMarathon::onReviewNextClicked()
 {
     m_currentIndex++;
     if (m_currentIndex < m_quizData.size()) {
@@ -435,7 +435,7 @@ void TemplatePlugin::onReviewNextClicked()
     }
 }
 
-void TemplatePlugin::handleBookScrollUp()
+void QuizGeneratorMarathon::handleBookScrollUp()
 {
     if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
     
@@ -450,7 +450,7 @@ void TemplatePlugin::handleBookScrollUp()
     m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
 }
 
-void TemplatePlugin::handleBookScrollDown()
+void QuizGeneratorMarathon::handleBookScrollDown()
 {
     if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
     
@@ -465,7 +465,7 @@ void TemplatePlugin::handleBookScrollDown()
     m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
 }
 
-void TemplatePlugin::showBookSelection()
+void QuizGeneratorMarathon::showBookSelection()
 {
     clearCurrentLayout();
     QVBoxLayout *layout = new QVBoxLayout(&m_dlg);
@@ -502,7 +502,7 @@ void TemplatePlugin::showBookSelection()
     );
     importButton->setAttribute(Qt::WA_AcceptTouchEvents);
     importButton->installEventFilter(this);
-    connect(importButton, &QPushButton::clicked, this, &TemplatePlugin::runImportScript);
+    connect(importButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::runImportScript);
     topBar->addWidget(importButton);
 
     layout->addLayout(topBar);
@@ -586,7 +586,7 @@ void TemplatePlugin::showBookSelection()
     );
     m_bookScrollUpButton->setAttribute(Qt::WA_AcceptTouchEvents);
     m_bookScrollUpButton->installEventFilter(this);
-    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &TemplatePlugin::handleBookScrollUp);
+    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::handleBookScrollUp);
     buttonLayout->addWidget(m_bookScrollUpButton);
 
     m_bookScrollDownButton = new QPushButton("▼", &m_dlg);
@@ -606,7 +606,7 @@ void TemplatePlugin::showBookSelection()
     );
     m_bookScrollDownButton->setAttribute(Qt::WA_AcceptTouchEvents);
     m_bookScrollDownButton->installEventFilter(this);
-    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &TemplatePlugin::handleBookScrollDown);
+    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::handleBookScrollDown);
     buttonLayout->addWidget(m_bookScrollDownButton);
 
     // Create exit button
@@ -624,7 +624,7 @@ void TemplatePlugin::showBookSelection()
     // Add button layout to main layout
     layout->addLayout(buttonLayout);
 
-    connect(selectButton, &QPushButton::clicked, this, &TemplatePlugin::onBookSelected);
+    connect(selectButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::onBookSelected);
     connect(exitButton, &QPushButton::clicked, &m_dlg, &QDialog::reject);
 
     // Set the layout
@@ -634,7 +634,7 @@ void TemplatePlugin::showBookSelection()
     m_dlg.showDlg();
 }
 
-void TemplatePlugin::onBookSelected()
+void QuizGeneratorMarathon::onBookSelected()
 {
     QListWidgetItem *selectedItem = m_bookListWidget->currentItem();
     if (!selectedItem) {
@@ -675,7 +675,7 @@ void TemplatePlugin::onBookSelected()
     generateQuizForBook(bookTitle);
 }
 
-void TemplatePlugin::generateQuizForBook(const QString &bookTitle)
+void QuizGeneratorMarathon::generateQuizForBook(const QString &bookTitle)
 {
     QString scriptPath = QUIZ_SCRIPT_PATH;
     QStringList arguments;
@@ -696,7 +696,7 @@ void TemplatePlugin::generateQuizForBook(const QString &bookTitle)
     process->start(scriptPath, arguments);
 }
 
-void TemplatePlugin::loadQuizQuestions()
+void QuizGeneratorMarathon::loadQuizQuestions()
 {
     m_quizData.clear();
 
@@ -736,7 +736,7 @@ void TemplatePlugin::loadQuizQuestions()
     }
 }
 
-void TemplatePlugin::showQuizUi()
+void QuizGeneratorMarathon::showQuizUi()
 {
     // Clear existing layout and widgets properly
     clearCurrentLayout();
@@ -783,7 +783,7 @@ void TemplatePlugin::showQuizUi()
         "}"
     );
     layout->addWidget(m_submitButton, 0, Qt::AlignCenter);
-    connect(m_submitButton, &QPushButton::clicked, this, &TemplatePlugin::onSubmitClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorMarathon::onSubmitClicked);
 
     // Set the new layout (don't delete old one, clearCurrentLayout already did that)
     m_dlg.setLayout(layout);
@@ -795,7 +795,7 @@ void TemplatePlugin::showQuizUi()
     m_dlg.showDlg();
 }
 
-void TemplatePlugin::clearCurrentLayout()
+void QuizGeneratorMarathon::clearCurrentLayout()
 {
     // Disconnect all signals
     if (m_submitButton) {
@@ -840,7 +840,7 @@ void TemplatePlugin::clearCurrentLayout()
 }
 
 // Create a custom widget for each option
-QWidget* TemplatePlugin::createOptionWidget(int index, const QString &text)
+QWidget* QuizGeneratorMarathon::createOptionWidget(int index, const QString &text)
 {
     // A container widget to hold radio button + label
     QWidget *optionWidget = new QWidget(&m_dlg);
@@ -881,7 +881,7 @@ QWidget* TemplatePlugin::createOptionWidget(int index, const QString &text)
     return optionWidget;
 }
 
-void TemplatePlugin::runImportScript()
+void QuizGeneratorMarathon::runImportScript()
 {
     showStatusMessage("Updating book list...");
     
@@ -920,7 +920,7 @@ void TemplatePlugin::runImportScript()
     process->start(UPDATE_BOOKS_SCRIPT_PATH);
 }
 
-void TemplatePlugin::showStatusMessage(const QString& message, bool isError)
+void QuizGeneratorMarathon::showStatusMessage(const QString& message, bool isError)
 {
     if (!m_statusLabel) {
         return;

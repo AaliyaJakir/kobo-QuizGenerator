@@ -1,5 +1,5 @@
-#ifndef TEMPLATE_PLUGIN_H
-#define TEMPLATE_PLUGIN_H
+#ifndef QUIZGENERATORMARATHON_PLUGIN_H
+#define QUIZGENERATORMARATHON_PLUGIN_H
 
 #include <QObject>
 #include "NPDialog.h"
@@ -27,15 +27,15 @@ struct QuizItem {
     QString explanation;
 };
 
-class TemplatePlugin : public QObject, public NPGuiInterface
+class QuizGeneratorMarathon : public QObject, public NPGuiInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID NPGuiInterfaceIID FILE "TemplatePlugin.json")
+    Q_PLUGIN_METADATA(IID NPGuiInterfaceIID FILE "QuizGeneratorMarathon.json")
     Q_INTERFACES(NPGuiInterface)
 
     public:
-        TemplatePlugin();
-        ~TemplatePlugin() {
+        QuizGeneratorMarathon();
+        ~QuizGeneratorMarathon() {
             clearCurrentLayout();
         }
         void showUi();
@@ -97,4 +97,4 @@ class TemplatePlugin : public QObject, public NPGuiInterface
         QLabel* m_explanationLabel = nullptr;
 };
 
-#endif // TEMPLATE_PLUGIN_H
+#endif // QUIZGENERATORMARATHON_PLUGIN_H

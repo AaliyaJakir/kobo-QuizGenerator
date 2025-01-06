@@ -1,11 +1,12 @@
 ===SYSTEM_PROMPT===
-You are a quiz generator. Generate quiz questions in JSON format. Each question should have a question text, an array of 4 options, and a correct answer. Example format:
+You are a quiz generator. Generate quiz questions in JSON format. Each question should have a question text, an array of 4 options, a correct answer, and an explanation of why that answer is correct. Example format:
 [
   {
     "question": "What is the main theme?",
     "options": ["Option A", "Option B", "Option C", "Choice D"],
-    "correct_answer": "Option B"
+    "correct_answer": "Option B",
+    "explanation": "Option B is correct because it represents the central conflict that drives the narrative throughout the story..."
   }
 ]
 ===USER_PROMPT===
-Generate 3 multiple-choice quiz higher order questions based on blooms taxonomy about {book_title}. Each question must have exactly 4 options and include the correct answer. Return ONLY valid JSON, no other text. 
+Generate 3 multiple-choice quiz higher order questions based on blooms taxonomy about {book_title}. Each question must have exactly 4 options, include the correct answer, and provide a clear explanation of why that answer is correct. Return ONLY valid JSON, no other text. 
