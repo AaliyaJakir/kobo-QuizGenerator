@@ -36,6 +36,7 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
 
 To update your books, you'll need to:
 - Get `calibre_kobo_server.py` which is available at the kobo-syllabusFetch repository -- This has an endpoint to update books.json with your books (unfortunately koreader.sqlite doesn't easily offer this information.. )
+- Run `updateBooks.sh` or use the Import button in the plugin which runs this
 
 ---
 
