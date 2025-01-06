@@ -34,9 +34,10 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
    Place `KoboRoot.tgz` in your Kobo's `.kobo` folder to update your device.
 
 ### Updating your books
-***You need `calibre_kobo_server.py` which you can get at kobo-fetchsyllabus which has an endpoint to update books.json with your books (unfortunately, koreader.sqlite doesn't easily offer this information)
 
-Run `updateBooks.sh` -- you can do this using Nickelmenu with this configuration:
+To update your books, you'll need to:
+1. Get `calibre_kobo_server.py` which is available at the kobo-syllabusFetch repository -- This has an endpoint to update books.json with your books (unfortunately koreader.sqlite doesn't easily offer this information.. I searched..)
+2. Run `updateBooks.sh` -- you can do this using Nickelmenu with this configuration:
 `menu_item:main:Update Logseq:cmd_spawn:/bin/sh /mnt/onboard/.adds/syllabusFetch/updateBooks.sh`
 
 ---
