@@ -18,9 +18,9 @@
 #include <QSizePolicy>
 #include <QTimer>
 
-#include "QuizGeneratorUltra.h"
+#include "QuizGenerator.h"
 
-void QuizGeneratorUltra::showError(const QString& message) 
+void QuizGenerator::showError(const QString& message) 
 {
     clearCurrentLayout();
     QVBoxLayout* layout = new QVBoxLayout(&m_dlg);
@@ -53,46 +53,16 @@ void QuizGeneratorUltra::showError(const QString& message)
     m_dlg.showDlg();
 }
 
-QuizGeneratorUltra::QuizGeneratorUltra() 
+QuizGenerator::QuizGenerator() 
     : m_currentIndex(0)
     , m_score(0)
     , m_uiInitialized(false)
 {
-    // Load quiz questions from JSON file:
-    QFile file(QUIZ_QUESTIONS_PATH);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open quiz_questions.json";
-        return;
-    }
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isArray()) {
-        qWarning() << "Invalid quiz JSON format!";
-        return;
-    }
-
-    QJsonArray arr = doc.array();
-    for (auto val : arr) {
-        QJsonObject obj = val.toObject();
-        QuizItem item;
-        item.question      = obj["question"].toString();
-        
-        // Convert JSON array to QStringList manually
-        QJsonArray optionsArray = obj["options"].toArray();
-        QStringList options;
-        for (const QJsonValue &option : optionsArray) {
-            options.append(option.toString());
-        }
-        item.options = options;
-        
-        item.correctAnswer = obj["correct_answer"].toString();
-        m_quizData.push_back(item);
-    }
+    // Constructor now just initializes member variables
+    // No need to load questions here since they're generated on demand
 }
 
-void QuizGeneratorUltra::showUi()
+void QuizGenerator::showUi()
 {
     // Reset quiz state
     m_currentIndex = 0;
@@ -103,7 +73,7 @@ void QuizGeneratorUltra::showUi()
     showBookSelection();
 }
 
-void QuizGeneratorUltra::updateQuestion()
+void QuizGenerator::updateQuestion()
 {
     // Guard against out-of-range
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
@@ -152,7 +122,7 @@ void QuizGeneratorUltra::updateQuestion()
     }
 }
 
-void QuizGeneratorUltra::onSubmitClicked()
+void QuizGenerator::onSubmitClicked()
 {
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
         showFinalScore();
@@ -184,7 +154,7 @@ void QuizGeneratorUltra::onSubmitClicked()
     }
 }
 
-void QuizGeneratorUltra::showFinalScore()
+void QuizGenerator::showFinalScore()
 {
     // Hide all option widgets first
     QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(m_dlg.layout());
@@ -211,7 +181,7 @@ void QuizGeneratorUltra::showFinalScore()
     // "Review" button
     m_submitButton->setText("Review");
     m_submitButton->show();  // Make sure it's visible
-    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onReviewClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGenerator::onReviewClicked);
     m_buttonLayout->addWidget(m_submitButton);
 
     // "Close" button
@@ -240,7 +210,7 @@ void QuizGeneratorUltra::showFinalScore()
 }
 
 // Add this method to handle touch events for radio buttons
-bool QuizGeneratorUltra::eventFilter(QObject *obj, QEvent *event)
+bool QuizGenerator::eventFilter(QObject *obj, QEvent *event)
 {
     // Handle button touch events
     if (QPushButton *button = qobject_cast<QPushButton*>(obj)) {
@@ -298,14 +268,14 @@ bool QuizGeneratorUltra::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void QuizGeneratorUltra::onReviewClicked()
+void QuizGenerator::onReviewClicked()
 {
     m_currentIndex = 0;
 
     // Set button text
     m_submitButton->setText(m_quizData.size() > 1 ? "Next" : "Close");
     m_submitButton->disconnect();
-    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onReviewNextClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGenerator::onReviewNextClicked);
 
     // Make sure the close button is properly connected
     if (m_secondaryButton) {
@@ -330,7 +300,7 @@ void QuizGeneratorUltra::onReviewClicked()
     updateReviewQuestion();
 }
 
-void QuizGeneratorUltra::updateReviewQuestion()
+void QuizGenerator::updateReviewQuestion()
 {
     if (m_currentIndex < 0 || m_currentIndex >= m_quizData.size()) {
         m_dlg.reject();  // Close dialog
@@ -387,9 +357,34 @@ void QuizGeneratorUltra::updateReviewQuestion()
             }
         }
     }
+
+    // Add explanation box
+    if (!m_explanationLabel) {
+        m_explanationLabel = new QLabel(&m_dlg);
+        m_explanationLabel->setWordWrap(true);
+        m_explanationLabel->setStyleSheet(
+            "QLabel {"
+            "    font-size: 28px;"
+            "    padding: 15px;"
+            "    margin: 10px;"
+            "    background-color: #f5f5f5;"
+            "    border: 2px solid #e0e0e0;"
+            "    border-radius: 10px;"
+            "}"
+        );
+        QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(m_dlg.layout());
+        if (mainLayout) {
+            mainLayout->addWidget(m_explanationLabel);
+        }
+    }
+
+    // Show explanation
+    QString explanation = m_quizData[m_currentIndex].explanation;
+    m_explanationLabel->setText("Explanation: " + explanation);
+    m_explanationLabel->show();
 }
 
-void QuizGeneratorUltra::onReviewNextClicked()
+void QuizGenerator::onReviewNextClicked()
 {
     m_currentIndex++;
     if (m_currentIndex < m_quizData.size()) {
@@ -409,7 +404,7 @@ void QuizGeneratorUltra::onReviewNextClicked()
     }
 }
 
-void QuizGeneratorUltra::handleBookScrollUp()
+void QuizGenerator::handleBookScrollUp()
 {
     if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
     
@@ -424,7 +419,7 @@ void QuizGeneratorUltra::handleBookScrollUp()
     m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
 }
 
-void QuizGeneratorUltra::handleBookScrollDown()
+void QuizGenerator::handleBookScrollDown()
 {
     if (!m_bookListWidget || m_bookListWidget->count() == 0) return;
     
@@ -439,7 +434,7 @@ void QuizGeneratorUltra::handleBookScrollDown()
     m_bookListWidget->scrollToItem(m_bookListWidget->currentItem(), QAbstractItemView::PositionAtCenter);
 }
 
-void QuizGeneratorUltra::showBookSelection()
+void QuizGenerator::showBookSelection()
 {
     clearCurrentLayout();
     QVBoxLayout *layout = new QVBoxLayout(&m_dlg);
@@ -476,7 +471,7 @@ void QuizGeneratorUltra::showBookSelection()
     );
     importButton->setAttribute(Qt::WA_AcceptTouchEvents);
     importButton->installEventFilter(this);
-    connect(importButton, &QPushButton::clicked, this, &QuizGeneratorUltra::runImportScript);
+    connect(importButton, &QPushButton::clicked, this, &QuizGenerator::runImportScript);
     topBar->addWidget(importButton);
 
     layout->addLayout(topBar);
@@ -560,7 +555,7 @@ void QuizGeneratorUltra::showBookSelection()
     );
     m_bookScrollUpButton->setAttribute(Qt::WA_AcceptTouchEvents);
     m_bookScrollUpButton->installEventFilter(this);
-    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &QuizGeneratorUltra::handleBookScrollUp);
+    connect(m_bookScrollUpButton, &QPushButton::clicked, this, &QuizGenerator::handleBookScrollUp);
     buttonLayout->addWidget(m_bookScrollUpButton);
 
     m_bookScrollDownButton = new QPushButton("▼", &m_dlg);
@@ -580,7 +575,7 @@ void QuizGeneratorUltra::showBookSelection()
     );
     m_bookScrollDownButton->setAttribute(Qt::WA_AcceptTouchEvents);
     m_bookScrollDownButton->installEventFilter(this);
-    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &QuizGeneratorUltra::handleBookScrollDown);
+    connect(m_bookScrollDownButton, &QPushButton::clicked, this, &QuizGenerator::handleBookScrollDown);
     buttonLayout->addWidget(m_bookScrollDownButton);
 
     // Create exit button
@@ -598,7 +593,7 @@ void QuizGeneratorUltra::showBookSelection()
     // Add button layout to main layout
     layout->addLayout(buttonLayout);
 
-    connect(selectButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onBookSelected);
+    connect(selectButton, &QPushButton::clicked, this, &QuizGenerator::onBookSelected);
     connect(exitButton, &QPushButton::clicked, &m_dlg, &QDialog::reject);
 
     // Set the layout
@@ -608,7 +603,7 @@ void QuizGeneratorUltra::showBookSelection()
     m_dlg.showDlg();
 }
 
-void QuizGeneratorUltra::onBookSelected()
+void QuizGenerator::onBookSelected()
 {
     QListWidgetItem *selectedItem = m_bookListWidget->currentItem();
     if (!selectedItem) {
@@ -649,18 +644,55 @@ void QuizGeneratorUltra::onBookSelected()
     generateQuizForBook(bookTitle);
 }
 
-void QuizGeneratorUltra::generateQuizForBook(const QString &bookTitle)
+void QuizGenerator::generateQuizForBook(const QString &bookTitle)
 {
     QString scriptPath = QUIZ_SCRIPT_PATH;
     QStringList arguments;
     arguments << bookTitle;
 
     QProcess *process = new QProcess(this);
+    
+    // Set up to capture output
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    
     connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus /*exitStatus*/){
         if (exitCode == 0) {
-            loadQuizQuestions();
-            showQuizUi();
+            // Read the output directly from the process
+            QByteArray output = process->readAll();
+            
+            // Parse the JSON from the output
+            QJsonDocument doc = QJsonDocument::fromJson(output);
+            if (doc.isArray()) {
+                QList<QuizItem> newQuizData;
+                QJsonArray arr = doc.array();
+                
+                for (auto val : arr) {
+                    QJsonObject obj = val.toObject();
+                    QuizItem item;
+                    item.question = obj["question"].toString();
+                    
+                    QJsonArray optionsArray = obj["options"].toArray();
+                    QStringList options;
+                    for (const QJsonValue &option : optionsArray) {
+                        options.append(option.toString());
+                    }
+                    item.options = options;
+                    
+                    item.correctAnswer = obj["correct_answer"].toString();
+                    item.explanation = obj["explanation"].toString();
+                    newQuizData.push_back(item);
+                }
+                
+                if (!newQuizData.isEmpty()) {
+                    m_quizData = newQuizData;
+                    showQuizUi();
+                } else {
+                    showError("No questions were generated.");
+                }
+            } else {
+                showError("Invalid quiz format generated.");
+            }
         } else {
             showError("Failed to generate quiz questions. Check your internet connection and try again.");
         }
@@ -670,46 +702,7 @@ void QuizGeneratorUltra::generateQuizForBook(const QString &bookTitle)
     process->start(scriptPath, arguments);
 }
 
-void QuizGeneratorUltra::loadQuizQuestions()
-{
-    m_quizData.clear();
-
-    QFile file(QUIZ_QUESTIONS_PATH);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open quiz_questions.json";
-        showError("Unable to open quiz questions file.");
-        return;
-    }
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isArray()) {
-        qWarning() << "Invalid quiz JSON format!";
-        showError("Invalid quiz questions format.");
-        return;
-    }
-
-    QJsonArray arr = doc.array();
-    for (auto val : arr) {
-        QJsonObject obj = val.toObject();
-        QuizItem item;
-        item.question      = obj["question"].toString();
-
-        // Convert JSON array to QStringList manually
-        QJsonArray optionsArray = obj["options"].toArray();
-        QStringList options;
-        for (const QJsonValue &option : optionsArray) {
-            options.append(option.toString());
-        }
-        item.options = options;
-
-        item.correctAnswer = obj["correct_answer"].toString();
-        m_quizData.push_back(item);
-    }
-}
-
-void QuizGeneratorUltra::showQuizUi()
+void QuizGenerator::showQuizUi()
 {
     // Clear existing layout and widgets properly
     clearCurrentLayout();
@@ -756,7 +749,7 @@ void QuizGeneratorUltra::showQuizUi()
         "}"
     );
     layout->addWidget(m_submitButton, 0, Qt::AlignCenter);
-    connect(m_submitButton, &QPushButton::clicked, this, &QuizGeneratorUltra::onSubmitClicked);
+    connect(m_submitButton, &QPushButton::clicked, this, &QuizGenerator::onSubmitClicked);
 
     // Set the new layout (don't delete old one, clearCurrentLayout already did that)
     m_dlg.setLayout(layout);
@@ -768,7 +761,7 @@ void QuizGeneratorUltra::showQuizUi()
     m_dlg.showDlg();
 }
 
-void QuizGeneratorUltra::clearCurrentLayout()
+void QuizGenerator::clearCurrentLayout()
 {
     // Disconnect all signals
     if (m_submitButton) {
@@ -809,10 +802,11 @@ void QuizGeneratorUltra::clearCurrentLayout()
     m_buttonLayout = nullptr;
     m_bookListWidget = nullptr;
     m_optionButtons.clear();
+    m_explanationLabel = nullptr;
 }
 
 // Create a custom widget for each option
-QWidget* QuizGeneratorUltra::createOptionWidget(int index, const QString &text)
+QWidget* QuizGenerator::createOptionWidget(int index, const QString &text)
 {
     // A container widget to hold radio button + label
     QWidget *optionWidget = new QWidget(&m_dlg);
@@ -853,7 +847,7 @@ QWidget* QuizGeneratorUltra::createOptionWidget(int index, const QString &text)
     return optionWidget;
 }
 
-void QuizGeneratorUltra::runImportScript()
+void QuizGenerator::runImportScript()
 {
     showStatusMessage("Updating book list...");
     
@@ -892,7 +886,7 @@ void QuizGeneratorUltra::runImportScript()
     process->start(UPDATE_BOOKS_SCRIPT_PATH);
 }
 
-void QuizGeneratorUltra::showStatusMessage(const QString& message, bool isError)
+void QuizGenerator::showStatusMessage(const QString& message, bool isError)
 {
     if (!m_statusLabel) {
         return;

@@ -58,39 +58,8 @@ TemplatePlugin::TemplatePlugin()
     , m_score(0)
     , m_uiInitialized(false)
 {
-    // Load quiz questions from JSON file:
-    QFile file(QUIZ_QUESTIONS_PATH);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open quiz_questions.json";
-        return;
-    }
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isArray()) {
-        qWarning() << "Invalid quiz JSON format!";
-        return;
-    }
-
-    QJsonArray arr = doc.array();
-    for (auto val : arr) {
-        QJsonObject obj = val.toObject();
-        QuizItem item;
-        item.question      = obj["question"].toString();
-        
-        // Convert JSON array to QStringList manually
-        QJsonArray optionsArray = obj["options"].toArray();
-        QStringList options;
-        for (const QJsonValue &option : optionsArray) {
-            options.append(option.toString());
-        }
-        item.options = options;
-        
-        item.correctAnswer = obj["correct_answer"].toString();
-        item.explanation = obj["explanation"].toString();
-        m_quizData.push_back(item);
-    }
+    // Constructor now just initializes member variables
+    // No need to load questions here since they're generated on demand
 }
 
 void TemplatePlugin::showUi()
@@ -682,11 +651,48 @@ void TemplatePlugin::generateQuizForBook(const QString &bookTitle)
     arguments << bookTitle;
 
     QProcess *process = new QProcess(this);
+    
+    // Set up to capture output
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    
     connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus /*exitStatus*/){
         if (exitCode == 0) {
-            loadQuizQuestions();
-            showQuizUi();
+            // Read the output directly from the process
+            QByteArray output = process->readAll();
+            
+            // Parse the JSON from the output
+            QJsonDocument doc = QJsonDocument::fromJson(output);
+            if (doc.isArray()) {
+                QList<QuizItem> newQuizData;
+                QJsonArray arr = doc.array();
+                
+                for (auto val : arr) {
+                    QJsonObject obj = val.toObject();
+                    QuizItem item;
+                    item.question = obj["question"].toString();
+                    
+                    QJsonArray optionsArray = obj["options"].toArray();
+                    QStringList options;
+                    for (const QJsonValue &option : optionsArray) {
+                        options.append(option.toString());
+                    }
+                    item.options = options;
+                    
+                    item.correctAnswer = obj["correct_answer"].toString();
+                    item.explanation = obj["explanation"].toString();
+                    newQuizData.push_back(item);
+                }
+                
+                if (!newQuizData.isEmpty()) {
+                    m_quizData = newQuizData;
+                    showQuizUi();
+                } else {
+                    showError("No questions were generated.");
+                }
+            } else {
+                showError("Invalid quiz format generated.");
+            }
         } else {
             showError("Failed to generate quiz questions. Check your internet connection and try again.");
         }
@@ -694,46 +700,6 @@ void TemplatePlugin::generateQuizForBook(const QString &bookTitle)
     });
 
     process->start(scriptPath, arguments);
-}
-
-void TemplatePlugin::loadQuizQuestions()
-{
-    m_quizData.clear();
-
-    QFile file(QUIZ_QUESTIONS_PATH);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open quiz_questions.json";
-        showError("Unable to open quiz questions file.");
-        return;
-    }
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isArray()) {
-        qWarning() << "Invalid quiz JSON format!";
-        showError("Invalid quiz questions format.");
-        return;
-    }
-
-    QJsonArray arr = doc.array();
-    for (auto val : arr) {
-        QJsonObject obj = val.toObject();
-        QuizItem item;
-        item.question      = obj["question"].toString();
-
-        // Convert JSON array to QStringList manually
-        QJsonArray optionsArray = obj["options"].toArray();
-        QStringList options;
-        for (const QJsonValue &option : optionsArray) {
-            options.append(option.toString());
-        }
-        item.options = options;
-
-        item.correctAnswer = obj["correct_answer"].toString();
-        item.explanation = obj["explanation"].toString();
-        m_quizData.push_back(item);
-    }
 }
 
 void TemplatePlugin::showQuizUi()

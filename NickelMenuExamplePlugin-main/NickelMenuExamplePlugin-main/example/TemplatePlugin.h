@@ -16,7 +16,6 @@
 
 // Script paths
 const QString QUIZ_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/generateQuiz.sh";
-const QString QUIZ_QUESTIONS_PATH = "/mnt/onboard/.adds/quiz/quiz_questions.json";
 const QString BOOKS_LIST_PATH = "/mnt/onboard/.adds/quiz/books.json";
 const QString UPDATE_BOOKS_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/updateBooks.sh";
 

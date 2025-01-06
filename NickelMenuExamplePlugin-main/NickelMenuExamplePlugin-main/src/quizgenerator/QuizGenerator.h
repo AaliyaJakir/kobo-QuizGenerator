@@ -1,5 +1,5 @@
-#ifndef QUIZGENERATORMARATHON_PLUGIN_H
-#define QUIZGENERATORMARATHON_PLUGIN_H
+#ifndef QUIZGENERATOR_PLUGIN_H
+#define QUIZGENERATOR_PLUGIN_H
 
 #include <QObject>
 #include "NPDialog.h"
@@ -16,7 +16,6 @@
 
 // Script paths
 const QString QUIZ_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/generateQuiz.sh";
-const QString QUIZ_QUESTIONS_PATH = "/mnt/onboard/.adds/quiz/quiz_questions.json";
 const QString BOOKS_LIST_PATH = "/mnt/onboard/.adds/quiz/books.json";
 const QString UPDATE_BOOKS_SCRIPT_PATH = "/mnt/onboard/.adds/quiz/updateBooks.sh";
 
@@ -27,15 +26,15 @@ struct QuizItem {
     QString explanation;
 };
 
-class QuizGeneratorMarathon : public QObject, public NPGuiInterface
+class QuizGenerator : public QObject, public NPGuiInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID NPGuiInterfaceIID FILE "QuizGeneratorMarathon.json")
+    Q_PLUGIN_METADATA(IID NPGuiInterfaceIID FILE "QuizGenerator.json")
     Q_INTERFACES(NPGuiInterface)
 
     public:
-        QuizGeneratorMarathon();
-        ~QuizGeneratorMarathon() {
+        QuizGenerator();
+        ~QuizGenerator() {
             clearCurrentLayout();
         }
         void showUi();
@@ -97,4 +96,4 @@ class QuizGeneratorMarathon : public QObject, public NPGuiInterface
         QLabel* m_explanationLabel = nullptr;
 };
 
-#endif // QUIZGENERATORMARATHON_PLUGIN_H
+#endif // QUIZGENERATOR_PLUGIN_H

@@ -16,9 +16,9 @@ OBJCOPY       = $(CROSS_COMPILE)objcopy
 OBJDUMP       = $(CROSS_COMPILE)objdump
 STRINGS       = $(CROSS_COMPILE)strings
 
-override LIBRARY  := quizgeneratorultra.so
-override SOURCES  := QuizGeneratorUltra.cc NPDialog.cc
-override MOCS     := QuizGeneratorUltra.h NPDialog.h
+override LIBRARY  := quizgenerator.so
+override SOURCES  := QuizGenerator.cc NPDialog.cc
+override MOCS     := QuizGenerator.h NPDialog.h
 override CXXFLAGS += -fPIC
 
 override OBJECTS_CXX  := $(filter %.o,$(SOURCES:%.cc=%.o))
