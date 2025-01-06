@@ -26,7 +26,7 @@ create_plugin: $(SRC_DIR)
 
 build: $(BUILD_DIR)
 	$(call check_name_param)
-	echo 'menu_item :main    :> $(NAME)   :nm_gui_plugin      :/usr/local/Kobo/plugins/$(LOWERCASE_NAME).so' > $(CONFIG_FILE)
+	echo 'menu_item :reader    :$(NAME)   :nm_gui_plugin      :/usr/local/Kobo/plugins/$(LOWERCASE_NAME).so' > $(CONFIG_FILE)
 	$(MAKE) -C $(NM_DIR) clean all plugins koboroot
 	mv $(NM_DIR)/$(ARTIFACT) .
 

@@ -24,7 +24,7 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
    - Put `generateQuiz.sh`, `updateBooks.sh` and `prompts.txt` in `/mnt/onboard/.adds/quiz/`
 
 3. **Set API Configuration**
-   Add your API credentials to `/mnt/onboard/.adds/pkm/config.txt`:
+   Add your API credentials to `/mnt/onboard/.adds/pkm/.env`:
    - OPENAI_API_URL
    - OPENAI_API_KEY
    (Note: Currently configured for Azure OpenAI)

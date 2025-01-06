@@ -3,7 +3,7 @@
 # Path to binaries on Kobo
 CURL_BIN="/mnt/onboard/.niluje/usbnet/bin/curl"
 JQ_BIN="/mnt/onboard/.niluje/usbnet/bin/jq"
-CONFIG_FILE="/mnt/onboard/.adds/pkm/config.txt"
+CONFIG_FILE="/mnt/onboard/.adds/pkm/.env"
 OUTPUT_DIR="/mnt/onboard/.adds/quiz"
 OUTPUT_FILE="$OUTPUT_DIR/books.json"
 

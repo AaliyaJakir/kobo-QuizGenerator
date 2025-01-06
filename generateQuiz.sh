@@ -1,10 +1,10 @@
 #!/bin/sh
 
 # Source environment variables
-if [ -f "/mnt/onboard/.adds/pkm/config.txt" ]; then
-    . "/mnt/onboard/.adds/pkm/config.txt"
+if [ -f "/mnt/onboard/.adds/pkm/.env" ]; then
+    . "/mnt/onboard/.adds/pkm/.env"
 else
-    echo "Error: config.txt not found"
+    echo "Error: .env not found"
     exit 1
 fi
 
