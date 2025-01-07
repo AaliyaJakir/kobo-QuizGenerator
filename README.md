@@ -31,7 +31,9 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
 
 4. **Update Kobo**
    Place `KoboRoot.tgz` in your Kobo's `.kobo` folder to update your device.
-
+---
+****IMPORTANT****: The QuizGenerator Plugin is set to show up in the reader view menu so you can view it on the menu when you're reading a book. You can configure this in the Makefile
+---
 ### Updating your books
 
 To update your books, you'll need to:
