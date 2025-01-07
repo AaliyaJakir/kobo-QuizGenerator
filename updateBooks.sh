@@ -3,15 +3,15 @@
 # Path to binaries on Kobo
 CURL_BIN="/mnt/onboard/.niluje/usbnet/bin/curl"
 JQ_BIN="/mnt/onboard/.niluje/usbnet/bin/jq"
-CONFIG_FILE="/mnt/onboard/.adds/pkm/.env"
+ENV_FILE="/mnt/onboard/.adds/pkm/.env"
 OUTPUT_DIR="/mnt/onboard/.adds/quiz"
 OUTPUT_FILE="$OUTPUT_DIR/books.json"
 
 # Check if config file exists and source it
-if [ -f "$CONFIG_FILE" ]; then
-    . "$CONFIG_FILE"
+if [ -f "$ENV_FILE" ]; then
+    . "$ENV_FILE"
 else
-    echo "Error: Config file not found at $CONFIG_FILE" >&2
+    echo "Error: Config file not found at $ENV_FILE" >&2
     exit 1
 fi
 

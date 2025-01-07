@@ -73,7 +73,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Extract and output the content directly
-echo "$RESPONSE" | $JQ_BIN -r '.choices[0].message.content'
+# Extract and clean the content, removing markdown code block markers
+echo "$RESPONSE" | $JQ_BIN -r '.choices[0].message.content' | sed 's/^```json//g' | sed 's/```$//g'
 
 exit 0

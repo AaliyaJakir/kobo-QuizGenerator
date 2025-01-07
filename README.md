@@ -23,8 +23,8 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
 2. **Add Required Files**
    - Put `generateQuiz.sh`, `updateBooks.sh` and `prompts.txt` in `/mnt/onboard/.adds/quiz/`
 
-3. **Set API Configuration**
-   Add your API credentials to `/mnt/onboard/.adds/pkm/.env`:
+3. **Set Environmental Variables**
+   Add your variables to `/mnt/onboard/.adds/pkm/.env`:
    - OPENAI_API_URL
    - OPENAI_API_KEY
    (Note: Currently configured for Azure OpenAI)
@@ -35,6 +35,7 @@ This Kobo plugin uses AI to generate multiple choice questions from your books. 
 ### Updating your books
 
 To update your books, you'll need to:
+- Include $SERVER_URL in the `/mnt/onboard/.adds/pkm/.env`
 - Get `calibre_kobo_server.py` which is available at the kobo-syllabusFetch repository -- This has an endpoint to update books.json with your books (unfortunately koreader.sqlite doesn't easily offer this information.. )
 - Run `updateBooks.sh` or use the Import button in the plugin which runs this
 
