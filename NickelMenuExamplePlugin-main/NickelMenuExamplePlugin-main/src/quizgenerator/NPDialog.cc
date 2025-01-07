@@ -13,11 +13,13 @@ NPDialog::NPDialog(QWidget *parent) : QDialog(parent)
     setAttribute(Qt::WA_AcceptTouchEvents);
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect geom = screen->availableGeometry();
-    int newW = geom.width();
-    int newH = geom.height() * 0.8;
-    int newX = (geom.width() - newW) / 2;
-    int newY = (geom.height() - newH) / 2;
-    setGeometry(newX, newY, newW, newH);
+    
+    // Set to full screen size
+    setGeometry(0, 0, geom.width(), geom.height());
+    
+    // Make sure dialog stays on top and covers the full screen
+    setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
+    setWindowState(Qt::WindowFullScreen);
 }
 
 bool NPDialog::eventFilter(QObject *obj, QEvent *event)

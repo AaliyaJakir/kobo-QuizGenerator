@@ -18,7 +18,7 @@ all: create_plugin clean build
 create_plugin: $(SRC_DIR)
 	$(call check_name_param)
 	for f in $(COPY_FILES); do echo $$f; cp $(EXAMPLE_DIR)/$$f $(SRC_DIR); done
-	cp $(EXAMPLE_DIR)/res/* $(SRC_DIR)/res/
+	# cp $(EXAMPLE_DIR)/res/* $(SRC_DIR)/res/
 	cat $(EXAMPLE_DIR)/TemplatePlugin.h | sed 's/TEMPLATE/$(UPPERCASE_NAME)/g' | sed 's/TemplatePlugin/$(NAME)/g' > $(SRC_DIR)/$(NAME).h
 	cat $(EXAMPLE_DIR)/TemplatePlugin.cc | sed 's/TemplatePlugin/$(NAME)/g' > $(SRC_DIR)/$(NAME).cc
 	cat $(EXAMPLE_DIR)/Makefile | sed 's/example/$(LOWERCASE_NAME)/g' | sed 's/TemplatePlugin/$(NAME)/g' > $(SRC_DIR)/Makefile
@@ -26,7 +26,8 @@ create_plugin: $(SRC_DIR)
 
 build: $(BUILD_DIR)
 	$(call check_name_param)
-	echo 'menu_item :reader    :$(NAME)   :nm_gui_plugin      :/usr/local/Kobo/plugins/$(LOWERCASE_NAME).so' > $(CONFIG_FILE)
+	echo 'menu_item :reader    :$(NAME)   :nickel_wifi        :autoconnect_silent' > $(CONFIG_FILE)
+	echo 'chain_success      :nm_gui_plugin      :/usr/local/Kobo/plugins/$(LOWERCASE_NAME).so' >> $(CONFIG_FILE)
 	$(MAKE) -C $(NM_DIR) clean all plugins koboroot
 	mv $(NM_DIR)/$(ARTIFACT) .
 
